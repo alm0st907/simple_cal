@@ -27,6 +27,7 @@ FILES = (
     ('hello.txt', 'application/vnd.google-apps.document'),
 )
 
+#this code portion does the uploading of the file
 for filename, mimeType in FILES:
     metadata = {'name': filename}
     if mimeType:
@@ -35,11 +36,12 @@ for filename, mimeType in FILES:
     if res:
         print('Uploaded "%s" (%s)' % (filename, res['mimeType']))
 
-if res:
-    MIMETYPE = 'application/pdf'
-    data = DRIVE.files().export(fileId=res['id'], mimeType=MIMETYPE).execute()
-    if data:
-        fn = '%s.pdf' % os.path.splitext(filename)[0]
-        with open(fn, 'wb') as fh:
-            fh.write(data)
-        print('Downloaded "%s" (%s)' % (fn, MIMETYPE))
+#this portion does the downloading for the pdf
+#if res:
+#    MIMETYPE = 'application/pdf'
+#    data = DRIVE.files().export(fileId=res['id'], mimeType=MIMETYPE).execute()
+#    if data:
+#        fn = '%s.pdf' % os.path.splitext(filename)[0]
+#        with open(fn, 'wb') as fh:
+#            fh.write(data)
+#        print('Downloaded "%s" (%s)' % (fn, MIMETYPE))
