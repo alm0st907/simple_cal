@@ -1,74 +1,46 @@
-#garrett rudisill
-#testing code for google drive api
+#!/usr/bin/env python
+#work on modifying this code as needed
+#it was mostly ripped from 
+#http://wescpy.blogspot.it/2015/12/google-drive-uploading-downloading.html
+
 from __future__ import print_function
-import httplib2
 import os
 
-from apiclient import discovery
-from oauth2client import client
-from oauth2client import tools
-from oauth2client.file import Storage
-
+from apiclient.discovery import build
+from httplib2 import Http
+from oauth2client import file, client, tools
 try:
     import argparse
     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
 except ImportError:
     flags = None
 
-# If modifying these scopes, delete your previously saved credentials
-# at ~/.credentials/drive-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly'
-CLIENT_SECRET_FILE = 'client_secret.json'
-APPLICATION_NAME = 'Drive API Python Quickstart'
+SCOPES = 'https://www.googleapis.com/auth/drive.file'
+store = file.Storage('storage.json')
+creds = store.get()
+if not creds or creds.invalid:
+    flow = client.flow_from_clientsecrets('client_secret.json', SCOPES)
+    creds = tools.run_flow(flow, store, flags) \
+            if flags else tools.run(flow, store)
+DRIVE = build('drive', 'v2', http=creds.authorize(Http()))
 
+FILES = (
+    ('hello.txt', False),
+    ('hello.txt', True),
+)
 
-def get_credentials():
-    """Gets valid user credentials from storage.
+for filename, convert in FILES:
+    metadata = {'title': filename}
+    res = DRIVE.files().insert(convert=convert, body=metadata,
+            media_body=filename, fields='mimeType,exportLinks').execute()
+    if res:
+        print('Uploaded "%s" (%s)' % (filename, res['mimeType']))
 
-    If nothing has been stored, or if the stored credentials are invalid,
-    the OAuth2 flow is completed to obtain the new credentials.
-
-    Returns:
-        Credentials, the obtained credential.
-    """
-    home_dir = os.path.expanduser('~')
-    credential_dir = os.path.join(home_dir, '.credentials')
-    if not os.path.exists(credential_dir):
-        os.makedirs(credential_dir)
-    credential_path = os.path.join(credential_dir,
-                                   'drive-python-quickstart.json')
-
-    store = Storage(credential_path)
-    credentials = store.get()
-    if not credentials or credentials.invalid:
-        flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
-        flow.user_agent = APPLICATION_NAME
-        if flags:
-            credentials = tools.run_flow(flow, store, flags)
-        else: # Needed only for compatibility with Python 2.6
-            credentials = tools.run(flow, store)
-        print('Storing credentials to ' + credential_path)
-    return credentials
-
-def main():
-    """Shows basic usage of the Google Drive API.
-
-    Creates a Google Drive API service object and outputs the names and IDs
-    for up to 10 files.
-    """
-    credentials = get_credentials()
-    http = credentials.authorize(httplib2.Http())
-    service = discovery.build('drive', 'v3', http=http)
-
-    results = service.files().list(
-        pageSize=10,fields="nextPageToken, files(id, name)").execute()
-    items = results.get('files', [])
-    if not items:
-        print('No files found.')
-    else:
-        print('Files:')
-        for item in items:
-            print('{0} ({1})'.format(item['name'], item['id']))
-
-if __name__ == '__main__':
-    main()
+if res:
+    MIMETYPE = 'application/pdf'
+    res, data = DRIVE._http.request(res['exportLinks'][MIMETYPE])
+    if data:
+        fn = '%s.pdf' % os.path.splitext(filename)[0]
+        with open(fn, 'wb') as fh:
+            fh.write(data)
+        print('Downloaded "%s" (%s)' % (fn, MIMETYPE))
