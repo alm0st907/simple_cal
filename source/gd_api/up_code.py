@@ -22,6 +22,14 @@ def client_auth():
 
     return drive #return usable list file
 
+#function to create our folder, to have stability within a users gdrives
+def create_folder():
+    drive = client_auth()
+    folder_metadata = {'title' : 'CalData', 'mimeType' : 'application/vnd.google-apps.folder'}
+    folder = drive.CreateFile(folder_metadata)
+    folder.Upload()
+
+#creates our .json file for our task data
 def create_db():
     drive = client_auth()
     data = drive.CreateFile({'title': 'task_db.json'})
@@ -31,6 +39,7 @@ def create_db():
 
 def main():
     create_db()
+    create_folder()
 
 if __name__ == '__main__':
     main()
