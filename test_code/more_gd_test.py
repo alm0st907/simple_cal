@@ -19,23 +19,30 @@ if not creds or creds.invalid:
     flow = client.flow_from_clientsecrets('client_secret.json', SCOPES)
     creds = tools.run_flow(flow, store, flags) \
             if flags else tools.run(flow, store)
-DRIVE = build('drive', 'v2', http=creds.authorize(Http()))
+DRIVE = build('drive', 'v3', http=creds.authorize(Http()))
+
+try:
+    file = open("data.json",'r')
+except IOError:
+    file = open("data.json",'w')
 
 FILES = (
-    ('hello.txt', False),
-    ('hello.txt', True),
+    ('data.json', False),
+    ('data.json', True),
 )
 
-for filename, convert in FILES:
-    metadata = {'title': filename}
-    res = DRIVE.files().insert(convert=convert, body=metadata,
-            media_body=filename, fields='mimeType,exportLinks').execute()
+
+for filename, mimeType in FILES:
+    metadata = {'name': filename}
+    if mimeType:
+        metadata['mimeType'] = mimeType
+    res = DRIVE.files().create(body=metadata, media_body=filename).execute()
     if res:
         print('Uploaded "%s" (%s)' % (filename, res['mimeType']))
 
 if res:
     MIMETYPE = 'application/pdf'
-    res, data = DRIVE._http.request(res['exportLinks'][MIMETYPE])
+    data = DRIVE.files().export(fileId=res['id'], mimeType=MIMETYPE).execute()
     if data:
         fn = '%s.pdf' % os.path.splitext(filename)[0]
         with open(fn, 'wb') as fh:
