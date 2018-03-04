@@ -102,7 +102,7 @@ def update_db():
     if data == "delete":
         file1.SetContentString("null")
     else:
-        file1.SetContentString(content+ data)
+        file1.SetContentString(data)
     file1.Upload()
    
     update=drive.auth.service.files().update(fileId=id,body=a).execute()
