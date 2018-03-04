@@ -44,7 +44,7 @@ def find_db(file_id): # this function finds if the file exists by search via ID
     status = False
 
     for file1 in file_list:
-        print('title: %s, id: %s' % (file1['title'], file1['id']))
+        #print('title: %s, id: %s' % (file1['title'], file1['id']))
         if file1['id'] ==file_id:
             status = True
     
@@ -64,8 +64,8 @@ def main():
     db_file = create_db()
     #create_folder()
     status = find_db(db_file) #pass in the id string of the file to search for it
-    #print(db_file)
-    #print(status)
+    print(db_file)
+    print(status)
     db_to_folder()
 
 if __name__ == '__main__':
