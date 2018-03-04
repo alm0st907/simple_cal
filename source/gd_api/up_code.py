@@ -71,12 +71,21 @@ def ListFolder(parent):
             filelist.append({"id":f['id'],"title":f['title'],"title1":f['alternateLink']})
     return filelist
 
-#rename a file by file id, allows to update a file within a subfolder, given we have the id
-def update_filename():
+#function to update db file within subfolder, given the id of the file
+def update_db():
     drive = client_auth()
     id = '1y1dsETkLA9M76gFpNMByfjlEhiJRd-ql'
     a=drive.auth.service.files().get(fileId=id).execute()
-    a['title']="capsTITLEnewerest.json"
+    a['title']="db.json"
+    file1 = drive.CreateFile({'id': id})
+    content = file1.GetContentString()
+    data = input("test string here:")
+    if data == "delete":
+        file1.SetContentString("null")
+    else:
+        file1.SetContentString(content+ data)
+    file1.Upload()
+   
     update=drive.auth.service.files().update(fileId=id,body=a).execute()
 
 
@@ -93,6 +102,6 @@ def main():
     test_list =ListFolder("1tbNBs1ZdWNOUB1lqWaryQABNyBDFNc-F")
     for lists in test_list:
         print(lists["id"])
-    update_filename()
+    update_db()
 if __name__ == '__main__':
     main()
