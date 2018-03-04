@@ -44,7 +44,7 @@ def find_db(file_id): # this function finds if the file exists by search via ID
     status = False
 
     for file1 in file_list:
-        #print('title: %s, id: %s' % (file1['title'], file1['id']))
+        print('title: %s, id: %s' % (file1['title'], file1['id']))
         if file1['id'] ==file_id:
             status = True
     
@@ -60,13 +60,38 @@ def db_to_folder():
         "parents": [{"kind": "drive#fileLink","id": "1tbNBs1ZdWNOUB1lqWaryQABNyBDFNc-F"}]})
     file1.Upload()
 
+def test_file_update():
+    drive = client_auth()
+    file1 = drive.CreateFile({'mimeType':'text/csv',
+        "parents": [{"kind": "drive#fileLink","id": "1w_ttNr9D8mGw2JWJAxRR_OdMo2DmlIER"}]})    
+    file1['title'] = 'newtitlebro.json'
+    file1.Upload()
+
+def ListFolder(parent):
+    drive = client_auth()
+    filelist=[]
+    file_list = drive.ListFile({'q': "'%s' in parents and trashed=false" % parent}).GetList()
+    for f in file_list:
+        if f['mimeType']=='application/vnd.google-apps.folder': # if folder
+            filelist.append({"id":f['id'],"title":f['title'],"list":ListFolder(f['id'])})
+        else:
+            filelist.append({"id":f['id'],"title":f['title'],"title1":f['alternateLink']})
+    return filelist
+
+
 def main():
-    db_file = create_db()
+    #db_file = create_db()
     #create_folder()
-    status = find_db(db_file) #pass in the id string of the file to search for it
-    print(db_file)
-    print(status)
-    db_to_folder()
+    #status = find_db("1PHn3tgxZT4NsR72PeptJiQ8ybiyQJRLb") #pass in the id string of the file to search for it
+    #print(db_file)
+    #print(status)
+    #db_to_folder()
+    #test_file_update()
+
+    #getting all the file id's within the the directory we specifify to search
+    test_list =ListFolder("1tbNBs1ZdWNOUB1lqWaryQABNyBDFNc-F")
+    for lists in test_list:
+        print(lists["id"])
 
 if __name__ == '__main__':
     main()
