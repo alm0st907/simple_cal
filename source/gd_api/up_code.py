@@ -1,46 +1,63 @@
-#!/usr/bin/env python
-#work on modifying this code as needed
-#it was mostly ripped from 
-#http://wescpy.blogspot.it/2015/12/google-drive-uploading-downloading.html
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
 
-from __future__ import print_function
-import os
 
-from apiclient.discovery import build
-from httplib2 import Http
-from oauth2client import file, client, tools
-try:
-    import argparse
-    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
-except ImportError:
-    flags = None
+def client_auth():
+    gauth = GoogleAuth()
+    gauth.LoadCredentialsFile("user.txt") #try to load credentials for gdrive
 
-SCOPES = 'https://www.googleapis.com/auth/drive.file'
-store = file.Storage('storage.json')
-creds = store.get()
-if not creds or creds.invalid:
-    flow = client.flow_from_clientsecrets('client_secret.json', SCOPES)
-    creds = tools.run_flow(flow, store, flags) \
-            if flags else tools.run(flow, store)
-DRIVE = build('drive', 'v2', http=creds.authorize(Http()))
+    if gauth.credentials is None:
+        #we need to get them if they arent able to be loaded
+        gauth.LocalWebserverAuth() # Creates local webserver and auto handles authentication.
+    elif gauth.access_token_expired:
+        gauth.Refresh()
+        #refresh the creds if necessary
+    else:
+        gauth.Authorize()
+        #using saved credentials and moving on
+    gauth.SaveCredentialsFile("user.txt")
+    #this saves our credentials so we dont pop the webpage every opening
 
-FILES = (
-    ('hello.txt', False),
-    ('hello.txt', True),
-)
+    drive = GoogleDrive(gauth)
 
-for filename, convert in FILES:
-    metadata = {'title': filename}
-    res = DRIVE.files().insert(convert=convert, body=metadata,
-            media_body=filename, fields='mimeType,exportLinks').execute()
-    if res:
-        print('Uploaded "%s" (%s)' % (filename, res['mimeType']))
+    return drive #return usable list file
 
-if res:
-    MIMETYPE = 'application/pdf'
-    res, data = DRIVE._http.request(res['exportLinks'][MIMETYPE])
-    if data:
-        fn = '%s.pdf' % os.path.splitext(filename)[0]
-        with open(fn, 'wb') as fh:
-            fh.write(data)
-        print('Downloaded "%s" (%s)' % (fn, MIMETYPE))
+#function to create our folder, to have stability within a users gdrives
+def create_folder():
+    drive = client_auth()
+    folder_metadata = {'title' : 'CalData', 'mimeType' : 'application/vnd.google-apps.folder'}
+    folder = drive.CreateFile(folder_metadata)
+    folder.Upload()
+
+#creates our .json file for our task data
+def create_db():
+    drive = client_auth()
+    data = drive.CreateFile({'title': 'task_db.json'})
+    data.Upload()
+    return data['id'] # this is how you access file id
+    
+def find_db(file_id): # this function finds if the file exists by search via ID
+    drive = client_auth()
+    file_list = drive.ListFile({'q': "'root' in parents and trashed=false"}).GetList()
+
+    status = False
+
+    for file1 in file_list:
+        #print('title: %s, id: %s' % (file1['title'], file1['id']))
+        if file1['id'] ==file_id:
+            status = True
+    
+    return status
+    
+    #need to find our db file by its gdrive ID
+
+
+def main():
+    db_file = create_db()
+    create_folder()
+    status = find_db(db_file) #pass in the id string of the file to search for it
+    print(db_file)
+    print(status)
+
+if __name__ == '__main__':
+    main()
