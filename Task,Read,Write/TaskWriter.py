@@ -13,14 +13,21 @@ class TaskWriter:
     #Accepts an array of tasks , and writes them to the JSON file
     def writeToJSON(self, tasksToWrite):
         data = []
+        
+        #Adds every value in the tasksToWrite List to data as a dictionary. Tasks without names are excluded
         for val in tasksToWrite:
             if val.toDictionary()['Task'] != "":
                 data.append(val.toDictionary())
-           # datastore = taskToWrite.toDictionary()
 
         json.dump(data, self.outfile)
-        #json.dump(datastore, self.outfile)
-        #json.dump(,self.outfile)
+        print("Writing to JSON file complete")
+        
 
+    #Writes a standard string to a text file, or any file that accepts strings
+    def writeToText(self, stringToWrite):
+        self.outfile.write(stringToWrite)
+        print("writing to text file complete")
+        
+    #closes the file
     def closeFile(self):
         self.outfile.close()
