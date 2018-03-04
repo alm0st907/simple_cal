@@ -40,18 +40,18 @@ def create_db():
     #probably write it to a file to easily parse in
     #file ID's dont mean too much security wise so its not 
 
-#function to check for a file by its id
+#function to find our db folder
 #this function only searches the root directory   
-def find_db(file_id): # this function finds if the file exists by search via ID
+def find_db(): # this function finds if the file exists by search via ID
     drive = client_auth()
     file_list = drive.ListFile({'q': "'root' in parents and trashed=false"}).GetList()
 
-    status = False
+    status = 0 #placeholder for the id
 
     for file1 in file_list:
-        print('title: %s, id: %s' % (file1['title'], file1['id']))
-        if file1['id'] ==file_id:
-            status = True
+        #print('title: %s, id: %s' % (file1['title'], file1['id']))
+        if file1['title'] =="CalData":
+            status = file1['id'] #ripping the id string
     
     return status
     
@@ -61,31 +61,40 @@ def find_db(file_id): # this function finds if the file exists by search via ID
 #change this to be dynamic later
 def db_to_folder():
     drive = client_auth()
-    file1 = drive.CreateFile({'title':'dummy.json', 'mimeType':'text/csv',
-        "parents": [{"kind": "drive#fileLink","id": "1tbNBs1ZdWNOUB1lqWaryQABNyBDFNc-F"}]})
+    folder_id = find_db()
+    file1 = drive.CreateFile({'title':'task_db.json', 'mimeType':'text/csv',
+        "parents": [{"kind": "drive#fileLink","id": folder_id}]})
     file1.Upload()
 
 #function to list what is in a folder
-#ListFolder("root") will print root of the gdrive, and you can find our subdirectory within
-#ListFolder("subdirectory file id") will find us the db file ID
-def ListFolder(parent):
+#should find the db file id so we can use this function and pass it to the update db function
+def ListFolder():
     drive = client_auth()
-    filelist=[]
-    file_list = drive.ListFile({'q': "'%s' in parents and trashed=false" % parent}).GetList()
+    filelist=[] #list of our files
+    folder_id = find_db() #get our folder id
+    file_list = drive.ListFile({'q': "'%s' in parents and trashed=false" % folder_id}).GetList()
+    
+    #iterate through the folder to find all our ids
     for f in file_list:
         if f['mimeType']=='application/vnd.google-apps.folder': # if folder
             filelist.append({"id":f['id'],"title":f['title'],"list":ListFolder(f['id'])})
         else:
             filelist.append({"id":f['id'],"title":f['title'],"title1":f['alternateLink']})
-    return filelist
+            
+    db_file_id = 0 # temp for the file id
+    for files in file_list:
+        if files["title"] == "task_db.json":
+            db_file_id = files['id']
+
+    return db_file_id
 
 #NEED TO GET THE DB FILE ID BEFORE USING THIS IN SHIPPABLE
 #function to update db file within subfolder, given the id of the file
 def update_db():
     drive = client_auth()
-    id = '1y1dsETkLA9M76gFpNMByfjlEhiJRd-ql'
+    id = ListFolder()
     a=drive.auth.service.files().get(fileId=id).execute()
-    a['title']="db.json"
+    a['title']="task_db.json"
     file1 = drive.CreateFile({'id': id})
     content = file1.GetContentString()
     #this data allows us to test inserting to the json and updating it
@@ -99,25 +108,17 @@ def update_db():
     update=drive.auth.service.files().update(fileId=id,body=a).execute()
 
 #download file based on file id
-def download_db(file_id):
+def download_db():
+    file_id = ListFolder() # finds our database file id within its subfolder
     drive = client_auth()
     download_file = drive.CreateFile({'id': file_id})
-    download_file.GetContentFile("task_db.json")
+    download_file.GetContentFile("task_db.json") #downloading the file, 
 
 def main():
-    #db_file = create_db()
-    #create_folder()
-    status = find_db("1-C3WrNfvt4aW1WM7PDBYyGbpQ_93CUDt") #pass in the id string of the file to search for it
-    #print(db_file)
-    print(status)
-    #db_to_folder()
-    #test_file_update()
+    create_folder()#create the directory
+    db_to_folder() #establish our folder and create the db file within
+    update_db() #update that db file
+    download_db() #download back to houston
 
-    #getting all the file id's within the the directory we specifify to search
-    test_list =ListFolder("1tbNBs1ZdWNOUB1lqWaryQABNyBDFNc-F")
-    for lists in test_list:
-        print(lists["id"])
-    update_db()
-    download_db('1y1dsETkLA9M76gFpNMByfjlEhiJRd-ql')
 if __name__ == '__main__':
     main()
