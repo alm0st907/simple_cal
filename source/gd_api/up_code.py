@@ -34,12 +34,30 @@ def create_db():
     drive = client_auth()
     data = drive.CreateFile({'title': 'task_db.json'})
     data.Upload()
+    return data['id'] # this is how you access file id
     
+def find_db(file_id): # this function finds if the file exists by search via ID
+    drive = client_auth()
+    file_list = drive.ListFile({'q': "'root' in parents and trashed=false"}).GetList()
+
+    status = False
+
+    for file1 in file_list:
+        #print('title: %s, id: %s' % (file1['title'], file1['id']))
+        if file1['id'] ==file_id:
+            status = True
+    
+    return status
+    
+    #need to find our db file by its gdrive ID
 
 
 def main():
-    create_db()
+    db_file = create_db()
     create_folder()
+    status = find_db(db_file) #pass in the id string of the file to search for it
+    print(db_file)
+    print(status)
 
 if __name__ == '__main__':
     main()
