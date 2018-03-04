@@ -1,4 +1,7 @@
 #:kivy 1.9.0
+#: import main main
+#: import ListAdapter kivy.adapters.listadapter.ListAdapter
+#: import ListItemButton kivy.uix.listview.ListItemButton
 
 # <CustButton@Button>:
 #     font_size: 20
@@ -35,12 +38,34 @@
             text: "time"
             font_size: 10
     BoxLayout:
-        TextInput:
-            id: todoList
-            font_size: 14
-            multiline: True
+        ListViewLayout:
+            orientation: "vertical"
+            padding: 10
+            spacing: 10
 
-        
+            BoxLayout:
+                orientation: "horizontal"
+                height: 50
+
+                Label:
+                    text: "Test"
+                Label:
+                    text: "test2"
+                Label:
+                    text: "Test"
+                Label:
+                    text: "test2"
+                Label:
+                    text: "Test"
+                Label:
+                    text: "test2"
+                
+            ListView:
+                id: toDoListView
+                adapter:
+                    ListAdapter(data=["Do this today"], cls=main.ToDoItem)
+
+            
 
 
     
