@@ -1,0 +1,33 @@
+#: import main listView
+#: import ListAdapter kivy.adapters.listadapter.ListAdapter
+#: import ListItemButton kivy.uix.listview.ListItemButton
+
+
+ListViewLayout:
+
+<ListViewLayout>:
+    orientation: "vertical"
+    padding: 10
+    spacing: 10
+
+    BoxLayout:
+        orientation: "horizontal"
+        height: 50
+
+        Label:
+            text: "Test"
+        Label:
+            text: "test2"
+        Label:
+            text: "Test"
+        Label:
+            text: "test2"
+        Label:
+            text: "Test"
+        Label:
+            text: "test2"
+        
+    ListView:
+        id: toDoListView
+        adapter:
+            ListAdapter(data=["Do this today"], cls=main.ToDoItem)
