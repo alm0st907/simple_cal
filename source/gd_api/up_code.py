@@ -23,6 +23,7 @@ def client_auth():
     return drive #return usable list file
 
 #function to create our folder, to have stability within a users gdrives
+#default name is "CalData"
 def create_folder():
     drive = client_auth()
     folder_metadata = {'title' : 'CalData', 'mimeType' : 'application/vnd.google-apps.folder'}
@@ -36,8 +37,11 @@ def create_db():
     data.Upload()
     return data['id'] # this is how you access file id
     #the id is returned so ideally we can keep track of this easily
+    #probably write it to a file to easily parse in
+    #file ID's dont mean too much security wise so its not 
 
-#function to check for a file by its id    
+#function to check for a file by its id
+#this function only searches the root directory   
 def find_db(file_id): # this function finds if the file exists by search via ID
     drive = client_auth()
     file_list = drive.ListFile({'q': "'root' in parents and trashed=false"}).GetList()
@@ -94,6 +98,11 @@ def update_db():
    
     update=drive.auth.service.files().update(fileId=id,body=a).execute()
 
+#download file based on file id
+def download_db(file_id):
+    drive = client_auth()
+    download_file = drive.CreateFile({'id': file_id})
+    download_file.GetContentFile("task_db.json")
 
 def main():
     #db_file = create_db()
@@ -109,5 +118,6 @@ def main():
     for lists in test_list:
         print(lists["id"])
     update_db()
+    download_db('1y1dsETkLA9M76gFpNMByfjlEhiJRd-ql')
 if __name__ == '__main__':
     main()
