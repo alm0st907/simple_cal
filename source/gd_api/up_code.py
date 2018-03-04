@@ -20,7 +20,6 @@ def client_auth():
     #this saves our credentials so we dont pop the webpage every opening
 
     drive = GoogleDrive(gauth)
-
     return drive #return usable list file
 
 #function to create our folder, to have stability within a users gdrives
@@ -60,12 +59,6 @@ def db_to_folder():
         "parents": [{"kind": "drive#fileLink","id": "1tbNBs1ZdWNOUB1lqWaryQABNyBDFNc-F"}]})
     file1.Upload()
 
-def test_file_update():
-    drive = client_auth()
-    file1 = drive.CreateFile({'mimeType':'text/csv',
-        "parents": [{"kind": "drive#fileLink","id": "1w_ttNr9D8mGw2JWJAxRR_OdMo2DmlIER"}]})    
-    file1['title'] = 'newtitlebro.json'
-    file1.Upload()
 
 def ListFolder(parent):
     drive = client_auth()
@@ -78,13 +71,21 @@ def ListFolder(parent):
             filelist.append({"id":f['id'],"title":f['title'],"title1":f['alternateLink']})
     return filelist
 
+#rename a file by file id, allows to update a file within a subfolder, given we have the id
+def update_filename():
+    drive = client_auth()
+    id = '1y1dsETkLA9M76gFpNMByfjlEhiJRd-ql'
+    a=drive.auth.service.files().get(fileId=id).execute()
+    a['title']="capsTITLEnewerest.json"
+    update=drive.auth.service.files().update(fileId=id,body=a).execute()
+
 
 def main():
     #db_file = create_db()
     #create_folder()
-    #status = find_db("1PHn3tgxZT4NsR72PeptJiQ8ybiyQJRLb") #pass in the id string of the file to search for it
+    status = find_db("1-C3WrNfvt4aW1WM7PDBYyGbpQ_93CUDt") #pass in the id string of the file to search for it
     #print(db_file)
-    #print(status)
+    print(status)
     #db_to_folder()
     #test_file_update()
 
@@ -92,6 +93,6 @@ def main():
     test_list =ListFolder("1tbNBs1ZdWNOUB1lqWaryQABNyBDFNc-F")
     for lists in test_list:
         print(lists["id"])
-
+    update_filename()
 if __name__ == '__main__':
     main()
