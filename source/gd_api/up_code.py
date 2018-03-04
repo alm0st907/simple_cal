@@ -35,7 +35,9 @@ def create_db():
     data = drive.CreateFile({'title': 'task_db.json'})
     data.Upload()
     return data['id'] # this is how you access file id
-    
+    #the id is returned so ideally we can keep track of this easily
+
+#function to check for a file by its id    
 def find_db(file_id): # this function finds if the file exists by search via ID
     drive = client_auth()
     file_list = drive.ListFile({'q': "'root' in parents and trashed=false"}).GetList()
@@ -59,7 +61,9 @@ def db_to_folder():
         "parents": [{"kind": "drive#fileLink","id": "1tbNBs1ZdWNOUB1lqWaryQABNyBDFNc-F"}]})
     file1.Upload()
 
-
+#function to list what is in a folder
+#ListFolder("root") will print root of the gdrive, and you can find our subdirectory within
+#ListFolder("subdirectory file id") will find us the db file ID
 def ListFolder(parent):
     drive = client_auth()
     filelist=[]
@@ -71,6 +75,7 @@ def ListFolder(parent):
             filelist.append({"id":f['id'],"title":f['title'],"title1":f['alternateLink']})
     return filelist
 
+#NEED TO GET THE DB FILE ID BEFORE USING THIS IN SHIPPABLE
 #function to update db file within subfolder, given the id of the file
 def update_db():
     drive = client_auth()
@@ -79,6 +84,7 @@ def update_db():
     a['title']="db.json"
     file1 = drive.CreateFile({'id': id})
     content = file1.GetContentString()
+    #this data allows us to test inserting to the json and updating it
     data = input("test string here:")
     if data == "delete":
         file1.SetContentString("null")
