@@ -1,0 +1,47 @@
+#:kivy 1.9.0
+
+# <CustButton@Button>:
+#     font_size: 20
+
+<BaseGui>:    
+    id:base 
+    rows: 2
+    
+    spacing: 10
+    padding: 10
+    
+
+    BoxLayout:
+        AnchorLayout:
+            anchor_x: 'left'
+            anchor_y: 'top'
+            Button:
+                size_hint_x: None
+                width: 30
+                size_hint_y: None
+                height: 30
+                Image:
+                    source: 'sliderMenuButton.png'
+                    center_y: self.parent.center_y
+                    center_x: self.parent.center_x
+                    size: self.parent.width, self.parent.height
+        AnchorLayout:
+            anchor_x: 'center'
+            anchor_y: 'top'    
+            Label:
+                text: "Date"
+                font_size: 10
+        Label:
+            text: "time"
+            font_size: 10
+    BoxLayout:
+        TextInput:
+            id: todoList
+            font_size: 14
+            multiline: True
+
+        
+
+
+    
+    
